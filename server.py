@@ -1,15 +1,18 @@
+''' Server that interfaces between the web page and the EmotionDetection package '''
 from flask import Flask, render_template, request
 from EmotionDetection.emotion_detection import emotion_detector
 
 app = Flask("Emotion Detector")
 
 @app.route("/emotionDetector")
-def emoDetector():
-
+def emo_detector():
+    ''' Retrieve the text to analyze from the request arguments '''
     text_to_analyze = request.args.get('textToAnalyze')
 
+    # Pass the text to the emotion_detector function and store the response
     response = emotion_detector(text_to_analyze)
 
+    # Extract scores and dominant emotion from the response
     anger_score = response['anger']
     disgust_score = response['disgust']
     fear_score = response['fear']
@@ -17,14 +20,18 @@ def emoDetector():
     sadness_score = response['sadness']
     dominant_emotion = response['dominant_emotion']
 
-    return "For the given statement, the system response is \'anger\': {}, ", \
-        "\'disgust\': {}, \'fear\' {}, \'joy\': {}, \'sadness\': {}. The dominant ", \
-        "emotion is {}".format(anger_score, disgust_score, fear_score, 
-        joy_score, sadness_score, dominant_emotion)
-
+    # Check if label is None, indicating an error invalid input
+    if dominant_emotion is None:
+        return "Invalid text! Please try again!"
+    # Return a formatted string with the scores and dominand emotion
+    return f"For the given statement, the system response is \'anger\': \
+    {anger_score}, \'disgust\': {disgust_score}, \'fear\' {fear_score}, \
+    \'joy\': {joy_score}, \'sadness\': {sadness_score}. The dominant emotion \
+    is {dominant_emotion}"
 
 @app.route("/")
 def render_index_page():
+    ''' Render the index page '''
     return render_template('index.html')
 
 if __name__ == "__main__":
